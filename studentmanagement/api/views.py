@@ -6,9 +6,19 @@ from .serializers import StudentSerializer , CourseSerializer  , ResultSerialize
 from rest_framework import status
 from course.models import Course
 from results.models import Result 
+from rest_framework.permissions import IsAuthenticated , AllowAny
 
 
 class StudentViewset(viewsets.ViewSet):
+     def get_permissions(self):
+         if self.action in ['list', 'retrieve']:
+             self.permission_classes = [AllowAny]
+         else :
+             self.permission_classes = [IsAuthenticated]
+    
+        
+         return [permission() for permission in self.permission_classes]
+
      def list(self, request):
           students = Student.objects.all()
           serializer = StudentSerializer(students, many = True)
@@ -38,6 +48,7 @@ class StudentViewset(viewsets.ViewSet):
      def destroy(self, request, pk=None):
         try :
             student = Student.objects.get(pk=pk)
+            
             serializer = StudentSerializer(student)
             student.delete()
             return Response(serializer.data , status = status.HTTP_204_NO_CONTENT)
@@ -51,6 +62,8 @@ class CourseViewset(viewsets.ModelViewSet):
 
 # # Create your views here.
 class ResultViewset(viewsets.ViewSet):
+    
+
     def list(self, request):
         results = Result.objects.all()
         serializer = ResultSerializer(results, many = True)
